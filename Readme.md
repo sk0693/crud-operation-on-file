@@ -1,19 +1,25 @@
 # Introduction
 
-This project is build for handling the files operation and storage. The apis is build by which `User` can upload the file(s) and see the all upload files with authorization. Also it can generate the `tiny url` by which user can give access the upload files to public.
+This project is made for creating, manipulating and access the items (hotels) for the user (hotelier) by which they can update the items on the Trivago website.
+
+## Tech I have used
+
+- Node js (Server/ backend)
+- Swagger (OpenApi)
+- Mocha and Chai for unit test cases
 
 ## Installing
 
 1. Clone the repository using :
 
 ```bash
-git clone https://github.com/sk0693/crud-operation-on-file.git
+git clone https://github.com/sk0693/trivago_hotelier.git
 ```
 
 2. Change the repository directory :
 
 ```bash
-cd crud-operation-on-file
+cd trivago_hotelier
 ```
 
 3. Install the needed node packges/modules :
@@ -28,30 +34,19 @@ npm install
 npm start
 ```
 
-## Featuring
+I have made some test cases using Mocha and chai. To run the test cases...
 
-- Authorization
-- User Authentication
-- File Uploading
-- File Storage
-- Compressing
-- Uncompressing
-- Tiny Url
-- File Serve
+```bash
+npm test
+```
 
 ## Authorization
 
-All API requests require the use of a generated Authorization Token `(JWT)`. You have to register and then login the application using `register` and `login` routes respectively. These APIs is not required the jwt token.
+All API expect `/auth` and `/bookings` requests require the use of a generated Authorization Token `(JWT)`. You have to register and then login the application using `register` and `login` routes respectively. These APIs are not required the jwt token.
 
-To authenticate an API request, you should provide your API key in the `Authorization` header.
+To authenticate an API request, you must provide your API key in the `Authorization` header.
 
-Alternatively, you may use cookies in the browser for the `GET` requests to authorize yourself to the API. But note that this is likely to leave traces in things like your history, if accessing the API through a browser.
-
-Using below Api route.
-
-```http
-GET :  /v1/auth/loginUsingGetAPI?email=[email]&password=[password]
-```
+Alternatively, you may use cookies in the browser for the requests to authorize yourself to the API. But note that this is likely to leave traces in things like your history, if accessing the API through a browser.
 
 ### In headers
 
@@ -63,7 +58,15 @@ jwt :  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWI4NGQ2YzNmOGIwM
 | :--- | :--- | :--- |
 | `jwt` | `string` | **Required**. JWT Token | -->
 
-## Availaible Routes
+# Availaible Routes
+
+```http
+/api-docs
+```
+
+To get the `swagger editor` which I have made for open api specifications.
+
+## Auth
 
 ### register
 
@@ -71,21 +74,27 @@ jwt :  Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWI4NGQ2YzNmOGIwM
 POST /v1/auth/register
 ```
 
-| Parameter  | Type     | Description                           |
-| :--------- | :------- | :------------------------------------ |
-| `email`    | `string` | **Required**. The valid email address |
-| `password` | `string` | **Required**. 8 digit password        |
-| `name`     | `string` | **Optional**. The Name                |
+| Parameter       | Type     | Description                                   |
+| :-------------- | :------- | :-------------------------------------------- |
+| `name`          | `string` | **Required**. The Name                        |
+| `contactNumber` | `string` | **Required**. The Name                        |
+| `email`         | `string` | **Required**. The valid email address         |
+| `password`      | `string` | **Required**. min 8 and max 16 digit password |
 
 #### Responses
 
 ```javascript
 {
-    "_id": String,
-    "email": String,
-    "name": String,
-    "createdAt": Date,
-    "updatedAt": Date,
+    "success": true,
+    "user" : {
+        "_id": String,
+        "email": String,
+        "name": String,
+        "contactNumber": String,
+        "createdAt": Date,
+        "updatedAt": Date,
+    }
+
 }
 ```
 
@@ -104,124 +113,239 @@ POST /v1/auth/login
 
 ```javascript
 {
+    "success": true,
     "user": {
         "id": String,
         "email": String,
-        "name": String
+        "name": String,
+        "createdAt": Date,
+        "updatedAt": Date,
     },
     "token": String
 }
 ```
 
-### file/upload
+## USER (Hotelier)
+
+### Get user details /v1/user
+
+To get the user details
 
 ```http
-POST /v1/file/upload
+GET /v1/user
 ```
-
-| Parameter | Type     | Description            |
-| :-------- | :------- | :--------------------- |
-| `file`    | `FILE`   | **Required**. Any file |
-| `title`   | `String` | **Optional**.          |
-| `title`   | `String` | **Optional**.          |
-
-While uploading, there is a compression algo applied on some kind of file. I have applied this algo on only files which has file `.txt` file extension else remains the same.
 
 #### Response
 
 ```javascript
 {
-    "result": "File uploaded succesfully with named `[file name]`"
+    "success": true,
+    "user": {
+        "_id": "5f4d2496804c5379496475a6",
+        "name": "sourabh",
+        "email": "sourabh@gmail.com",
+        "contactNumber": "111234",
+        "createdAt": "2020-08-31T16:25:58.126Z",
+        "updatedAt": "2020-08-31T16:46:21.830Z",
+        "__v": 0
+    }
 }
 ```
 
-### file
+## ITEMS
+
+### v1/items/createItem
 
 ```http
-GET /v1/file
+POST /v1/items/createItem
 ```
 
-To get the all files which is uploaded by the user
+| Parameter      | Type     | Description                                            |
+| :------------- | :------- | :----------------------------------------------------- |
+| `name`         | `String` | **Required**. The name of the hotel, min 10 characters |
+| `ratings`      | `Number` | **Required**. between 0 and 5                          |
+| `location`     | `object` | **Required**. the valid location object                |
+| `category`     | `String` | **Required**. it is one, from predefined categories    |
+| `image`        | `String` | **Required**. the valid image url                      |
+| `reputation`   | `Number` | **Required**. the valid number                         |
+| `price`        | `Number` | **Required**. the price of the booking                 |
+| `availability` | `Number` | **Required**. curently availability                    |
 
-<!-- | Parameter  | Type     | Description                           |
-| :--------- | :------- | :------------------------------------ |
-| `email`    | `string` | **Required**. The valid email address |
-| `password` | `string` | **Required**. 8 digit password        | -->
+\*While creating item, the location will be stored in different collection.
 
 #### Response
 
 ```javascript
 {
-    "result": [
-        {
-            "isDeleted": Boolean,
-            "isCompressed": Boolean,
-            "_id": String,
-            "userId": String,
-            "title": String,
-            "description": String,
-            "fileUrl": String,
-            "meta": {
-                "filepath": String,
-                "filename": String,
-                "size": Number,
-                "originalname": String,
-                "mimeType": String
-            },
-            "createdAt": Date,
-            "updatedAt": Date,
-        }
-        ...
+    "success": true,
+    "item": {
+        "category": "hotel",
+        "reputationBadge": "green",
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "The Taz hotel 234",
+        "ratings": 0,
+        "location": "5f4de72b5596ee2234b3c11c",
+        "image": "www.image.com",
+        "reputation": 900,
+        "price": 1000,
+        "availability": 2,
+        "user_id": "5f4d2496804c5379496475a6",
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:16:11.429Z",
+        "__v": 0
+    }
+}
+```
+
+### Get the single item /v1/items/[:item_id]
+
+To get the item with the item_id
+
+```http
+GET /v1/items/5f4de72b5596ee2234b3c11d
+```
+
+| Parameter | Type     | Description                     |
+| :-------- | :------- | :------------------------------ |
+| `item_id` | `string` | **Required**. The valid item id |
+
+#### Response
+
+```javascript
+{
+    "success": true,
+    "item": {
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "The Taz hotel",
+        "category": "hotel",
+        "reputationBadge": "green",
+        "ratings": 0,
+        "location": {
+            "_id": "5f4de72b5596ee2234b3c11c",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "zip_code": 40997,
+            "address": "Apollo Bandar, Colaba",
+            "createdAt": "2020-09-01T06:16:11.425Z",
+            "updatedAt": "2020-09-01T06:16:11.425Z",
+            "__v": 0,
+            "id": "5f4de72b5596ee2234b3c11c"
+        },
+        "image": "www.image.com",
+        "reputation": 900,
+        "price": 1000,
+        "availability": 2,
+        "user_id": "5f4d2496804c5379496475a6",
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:16:11.429Z",
+        "__v": 0
+    }
+}
+```
+
+### Get all items /v1/items
+
+To get all items
+
+```http
+GET /v1/items
+```
+
+#### Response
+
+```javascript
+{
+    "success": true,
+    "item": [{
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "The Taz hotel",
+        "category": "hotel",
+        "reputationBadge": "green",
+        "ratings": 0,
+        "location": {
+            "_id": "5f4de72b5596ee2234b3c11c",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "zip_code": 40997,
+            "address": "Apollo Bandar, Colaba",
+            "createdAt": "2020-09-01T06:16:11.425Z",
+            "updatedAt": "2020-09-01T06:16:11.425Z",
+            "__v": 0,
+            "id": "5f4de72b5596ee2234b3c11c"
+        },
+        "image": "www.image.com",
+        "reputation": 900,
+        "price": 1000,
+        "availability": 2,
+        "user_id": "5f4d2496804c5379496475a6",
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:16:11.429Z",
+        "__v": 0
+    }
+    ...
     ]
 }
 ```
 
-### file/:[fileId]
+### Update the item /v1/items/[:item_id]
 
 ```http
-GET /v1/file/5eb97457f2130e4060365dd4
+PATCH /v1/items/5eb97457f2130e4060365dd4
 ```
 
-To get the single file using `[fileId]` params which is uploaded by the user
-
-<!-- | Parameter  | Type     | Description                           |
-| :--------- | :------- | :------------------------------------ |
-| `email`    | `string` | **Required**. The valid email address |
-| `password` | `string` | **Required**. 8 digit password        | -->
+| Parameter | Type     | Description                                     |
+| :-------- | :------- | :---------------------------------------------- |
+| `body`    | `Object` | **Required**. all keys which you want to update |
 
 #### Response
 
 ```javascript
 {
-    "result":
-        {
-            "isDeleted": Boolean,
-            "isCompressed": Boolean,
-            "_id": String,
-            "userId": String,
-            "title": String,
-            "description": String,
-            "fileUrl": String,
-            "meta": {
-                "filepath": String,
-                "filename": String,
-                "size": Number,
-                "originalname": String,
-                "mimeType": String
-            },
-            "createdAt": Date,
-            "updatedAt": Date,
-        }
+    "success": true,
+    "message": "Item updated successfully",
+    "item": {
+        "category": "resort",
+        "reputationBadge": "green",
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "The Taz hotel",
+        "ratings": 0,
+        "location": {
+            "_id": "5f4de72b5596ee2234b3c11c",
+            "city": "Mumbai",
+            "state": "Maharashtra",
+            "country": "India",
+            "zip_code": 40009,
+            "address": "Apollo Bandar, Colaba",
+            "createdAt": "2020-09-01T06:16:11.425Z",
+            "updatedAt": "2020-09-01T06:16:11.425Z",
+            "__v": 0,
+            "id": "5f4de72b5596ee2234b3c11c"
+        },
+        "image": "www.image.com",
+        "reputation": 900,
+        "price": 1000,
+        "availability": 2,
+        "user_id": "5f4d2496804c5379496475a6",
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:29:15.343Z",
+        "__v": 0
+    }
 }
 ```
 
-### file/:[fileId]
+### Delete the item /v1/items/[:item_id]
 
 ```http
-DELETE /v1/file/5eb97457f2130e4060365dd4
+DELETE /v1/items/5eb97457f2130e4060365dd4
 ```
 
-Delete the selected file using `[fileId]` params
+Delete the item using `[item_id]` params
+
+| Parameter | Type     | Description                     |
+| :-------- | :------- | :------------------------------ |
+| `item_id` | `string` | **Required**. The valid item id |
 
 ### user/
 
@@ -243,38 +367,68 @@ Getting the user details.
 }
 ```
 
-### user/share/:[fileId]
+## BOOKINGS
+
+### Book a item. /v1/bookings/bookItem
 
 ```http
-GET /v1/user/shareFile/5eb97457f2130e4060365dd4
+POST /v1/bookings/bookItem
 ```
 
-When user wants to share the file to publically, then in response the server will give the `tiny url`
+| Parameter | Type     | Description                                 |
+| :-------- | :------- | :------------------------------------------ |
+| `name`    | `String` | **Required**. The name of the customer      |
+| `item_id` | `String` | **Required**. The valid item id for booking |
 
 #### Response
 
 ```javascript
 {
-    "result": String [`the tiny url in return`]
+    "success": true,
+    "message": 'Booking done successfull',
+    "booking": {
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "Sourabh khurana",
+        "item_id": "5f4de72b5596ee2234b3c11c",
+        "price": 1000,
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:29:15.343Z",
+        "__v": 0
+    }
 }
 ```
 
-### tiny/:[tinyUrl]
+### Get all bookings /v1/bookings
+
+To get all bookings
 
 ```http
-GET /tiny/nkqYrhi
+GET /v1/bookings
 ```
-
-When user wants to share the file to publically, then in response the server will give the `tiny url`
 
 #### Response
 
-The file will be served on the browser. And if the uploaded file has `.txt` extension then it will be uncompressed before served.
+```javascript
+{
+    "success": true,
+    "bookings": [{
+        "_id": "5f4de72b5596ee2234b3c11d",
+        "name": "Sourabh khurana",
+        "item_id": "5f4de72b5596ee2234b3c11c",
+        "price": 1000,
+        "createdAt": "2020-09-01T06:16:11.429Z",
+        "updatedAt": "2020-09-01T06:29:15.343Z",
+        "__v": 0
+    }
+    ...
+    ]
+}
+```
 
-## Authors
+## Author
 
-* **Sourabh Khurana** 
+- **Sourabh Khurana**
 
-- [GitHub](https://github.com/sk0693)
-- [LinkedIn](https://linkedin.com/sk0693)
-- [Portfolio](https://sourabhkhurana.com/resume.html)
+* [GitHub](https://github.com/sk0693)
+* [LinkedIn](https://linkedin.com/sk0693)
+* [Portfolio](https://sourabhkhurana.com/resume.html)
